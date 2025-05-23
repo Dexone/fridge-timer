@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Таймер до выключения</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="countdown">Расчёт...</div>
+
+  <script>
+    const targets = ["08:30", "13:30", "19:30"];
+
+    function getNextTargetTime() {
+      const now = new Date();
+      const today = now.toISOString().slice(0, 10);
+      const times = targets.map(t => new Date(`${today}T${t}:00`));
+      const future = times.find(t => t > now);
+
+      if (!future) {
+        const [h, m] = targets[0].split(":");
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        tomorrow.setHours(+h, +m, 0, 0);
+        return tomorrow;
+      }
+
+      return future;
+    }
+
+    function updateCountdown() {
+      const now = new Date();
+      const target = getNextTargetTime();
+      const diffMs = target - now;
+
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+      document.getElementById("countdown").textContent =
+        `До ближайшего выключения: ${hours} ч ${minutes} мин ${seconds} сек`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
