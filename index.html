@@ -2,56 +2,79 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Таймер до выключения</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Таймер до следующего выключения</title>
   <style>
     body {
       font-family: sans-serif;
-      font-size: 24px;
+      background-color: #f0f0f0;
+      color: #222;
+      margin: 0;
+      padding: 0;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       height: 100vh;
+      text-align: center;
+    }
+
+    #timer {
+      font-size: 6vw;
+      font-weight: bold;
+    }
+
+    @media (max-width: 480px) {
+      #timer {
+        font-size: 10vw;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="countdown">Расчёт...</div>
+  <div>
+    <div>До следующего выключения осталось:</div>
+    <div id="timer">—:—:—</div>
+  </div>
 
   <script>
-    const targets = ["08:30", "13:30", "19:30"];
+    const targetTimes = ['08:30', '13:30', '19:30'];
 
     function getNextTargetTime() {
       const now = new Date();
-      const today = now.toISOString().slice(0, 10);
-      const times = targets.map(t => new Date(`${today}T${t}:00`));
-      const future = times.find(t => t > now);
+      const today = now.toDateString();
 
-      if (!future) {
-        const [h, m] = targets[0].split(":");
-        const tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-        tomorrow.setHours(+h, +m, 0, 0);
-        return tomorrow;
+      for (let timeStr of targetTimes) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const target = new Date(`${today} ${hours}:${minutes}:00`);
+
+        if (target > now) return target;
       }
 
-      return future;
+      const [hours, minutes] = targetTimes[0].split(':').map(Number);
+      const tomorrow = new Date(now);
+      tomorrow.setDate(now.getDate() + 1);
+      return new Date(`${tomorrow.toDateString()} ${hours}:${minutes}:00`);
     }
 
-    function updateCountdown() {
+    function updateTimer() {
       const now = new Date();
       const target = getNextTargetTime();
-      const diffMs = target - now;
+      const diff = target - now;
 
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+      const hours = Math.floor(diff / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
 
-      document.getElementById("countdown").textContent =
-        `До ближайшего выключения: ${hours} ч ${minutes} мин ${seconds} сек`;
+      document.getElementById('timer').textContent =
+        `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
     }
 
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+    function pad(n) {
+      return n < 10 ? '0' + n : n;
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
   </script>
 </body>
 </html>
